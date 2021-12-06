@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
  *          - 계정 추가, 권한 추가, DB 연동 등
  *          - 기본적인 보안 기능 외에 시스템에서 필요로 하는 더 세부적이고 추가적인 보안 기능이 필요
  * </pre>
- *
  */
 @RestController
 public class SecurityController {
@@ -30,6 +29,16 @@ public class SecurityController {
 
         return "home";
 
+    }
+
+    /**
+     * 단순히 로그인 페이지에 문자열만 출력하도록 한다.
+     *
+     * @return
+     */
+    @GetMapping(path = "loginPage")
+    public String loginPage() {
+        return "loginPage";
     }
 
 }
