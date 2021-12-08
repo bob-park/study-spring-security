@@ -1,5 +1,6 @@
 package io.security.basicsecurity.common.config;
 
+import javax.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -49,7 +50,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .formLogin() // 인증을 요구할 때, Form Login 으로 한다.
 //            .loginPage("/loginPage") // 사용자 정의 Login Page - 이 경로는 접근할 때 인증에서 제외한다.
             .defaultSuccessUrl("/") // login 성공 후 이동 페이지
-            .failureUrl("/loginPage?error=true") // 로그인 실패 후 이동 페이지
+            .failureUrl("/login?error=true") // 로그인 실패 후 이동 페이지
             .usernameParameter("userId") // 아이디 파라미터명 설정
             .passwordParameter("passwd") // password parameter 설정
             .loginProcessingUrl("/login_proc") // 로그인 form action url
@@ -64,6 +65,28 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                response.sendRedirect("/loginPage");
 //            }) // 로그인 실패 후 핸들러
             .permitAll() // 이 login page 는 인증을 받지 않도록 설정한다.
+        ;
+
+        /*
+         Logout
+            - 세션 무효화, 인증토큰 삭제, 쿠키정보 삭제, 로그인 페이지로 redirect
+            - default 로 항상 post 방식으로 진행해야 한다.
+         */
+        http
+            .logout() // Logout 기능이 작동함
+            .logoutUrl("/logout") // 로그아웃 처리 URL
+            .logoutSuccessUrl("/loginPage") // 로그아웃 성공 후 이동 페이지
+            .deleteCookies("remember-me") // 로그아웃 후 쿠키 삭제
+            .addLogoutHandler((request, response, authentication) -> {
+                HttpSession session = request.getSession();
+
+                session.invalidate();
+            }) // 로그아웃 핸들러 - 쿠키 삭제 외 추가 작업이 필요한 경우 정의
+            .logoutSuccessHandler((request, response, authentication) -> {
+                // Redirect 뿐 아니라 다양한 로직도 실행할 수 있음
+
+                response.sendRedirect("/loginPage");
+            }) // 로그아웃 후 핸들러
         ;
     }
 }
