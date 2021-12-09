@@ -1,11 +1,13 @@
 package io.security.basicsecurity.common.config;
 
 import javax.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
  * 사용자 정의 보안 기능 구현
@@ -29,9 +31,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
  * </pre>
  */
 @Slf4j
+@RequiredArgsConstructor
 @EnableWebSecurity // ! 반드시 선언해주어야 웹 보안이 설정된다.
 @Configuration
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private final UserDetailsService userDetailsService;
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -76,7 +82,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .logout() // Logout 기능이 작동함
             .logoutUrl("/logout") // 로그아웃 처리 URL
             .logoutSuccessUrl("/loginPage") // 로그아웃 성공 후 이동 페이지
-            .deleteCookies("remember-me") // 로그아웃 후 쿠키 삭제
+            .deleteCookies("remember") // 로그아웃 후 쿠키 삭제
             .addLogoutHandler((request, response, authentication) -> {
                 HttpSession session = request.getSession();
 
@@ -88,5 +94,24 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 response.sendRedirect("/loginPage");
             }) // 로그아웃 후 핸들러
         ;
+
+        /*
+         Remember Me 인증
+
+         - 세션이 만료되고 Web Browser 가 종료된 후에도 Application 이 사용자를 기억하는 기능
+         - Remember-Me 쿠키에 대한 Http 요청을 확인한 후 Token 기반 인증을 사용해 유효성을 검사하고 Token 이 검증되면 사용자는 로그인 된다.
+
+         - 사용자 라이프 사이클
+            - 인증 성공(Remember-Me 쿠키 설정)
+            - 인증 실패(쿠키가 존재하면 쿠키 무효화)
+            - 로그아웃 (쿠키가 존재하면 쿠키 무효화)
+         */
+        http
+            .rememberMe() // rememberMe 기능 작동함
+            .rememberMeParameter("remember") // 기본 파라미터를 해당 문자열로 변경, default : remember-me
+            .tokenValiditySeconds(3_600) // 만료 시간 설정
+//            .alwaysRemember(true) // Remember Me 기능이 활성화되지 않아도 항상 실행, default : false
+            .userDetailsService(userDetailsService) // remember me 기능에서 사용자 계정을 조회하여 처리할 때 사용하는 service
+            ;
     }
 }
