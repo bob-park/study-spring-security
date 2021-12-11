@@ -38,7 +38,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
 
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -111,7 +110,18 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .rememberMeParameter("remember") // 기본 파라미터를 해당 문자열로 변경, default : remember-me
             .tokenValiditySeconds(3_600) // 만료 시간 설정
 //            .alwaysRemember(true) // Remember Me 기능이 활성화되지 않아도 항상 실행, default : false
-            .userDetailsService(userDetailsService) // remember me 기능에서 사용자 계정을 조회하여 처리할 때 사용하는 service
-            ;
+            // remember me 기능에서 사용자 계정을 조회하여 처리할 때 사용하는 service
+            .userDetailsService(userDetailsService)
+        ;
+
+        /*
+         AnonymousAuthenticationFilter
+
+         - 익명 사용자 인증 처리 필터
+         - 익명 사용자와 인증 사용자를 구분해서 처리하기 위한 용도로 사용
+         - 화면에서 인증 여부를 구현할 때 isAnonymous() 와 isAuthenticated() 로 구분해서 사용
+         - 인증 객체를 세션에 저장하지 않는다.
+         */
+
     }
 }
