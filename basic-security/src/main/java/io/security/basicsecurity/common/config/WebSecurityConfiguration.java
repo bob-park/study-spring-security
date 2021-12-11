@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
@@ -123,5 +124,76 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
          - 인증 객체를 세션에 저장하지 않는다.
          */
 
+
+
+        /*
+         동시 세션 제어
+
+         - 최대 세션 허용 개수 초과 시 (strategy 2개)
+            - 이전 사용자 세션 만료
+            - 현재 사용자 인증 실패
+                - 추후 로그인 한 계정 인증 예외 발생
+         */
+        http
+            .sessionManagement() // 세션 관리 기능이 작동함
+            .maximumSessions(1) // 최대 혀용 가능 세션 수, -1 입력시 무제한 로그인 세션 허용
+            .maxSessionsPreventsLogin(false) // 동시 로그인 차단함, default : false (기본 로그인 세션 만료)
+//            .invalidSessionUrl("/invalid") // 세션이 유효하지 않을 때 이동할 페이지 - 없는데?
+            .expiredUrl("/expired") // 세션이 만료된 경우 이동할 페이지
+        ;
+
+        /*
+         세션 고정 보호
+
+         - 공격자 접속
+            - 사용자에게 공격자 세션 쿠키 사용
+
+         - 사용자 접속
+            - 공격자 세션쿠키로 로그인 시도
+
+         - 사용자가 공격자 세션쿠키로 로그인 성공할 경우 공격자도 인증된 것처럼 세션을 사용할 수 있음
+            - 공격자 쿠키 값으로 인증되어 있기 때문에 공격자는 사용자 정보를 공유
+
+
+         ! 하지만, Spring Security 는 사용자가 세션쿠키로 로그인할 경우 새로운 세션 ID 을 발급하여 넘겨주기 때문에, 세션을 보호할 수 있다.
+
+         세션 고정 보호 전략
+         - none
+            - session 이 새롭게 생성되지 않음
+
+         - changeSessionId
+            - default
+            - servlet 3.1 이상에서 기본값
+            - 인증 시 새로 sessionId 를 생성
+            - 이전 session 의 모든 속성값을 그대로 사용할 수 있음
+
+         - migrateSession
+            - changeSessionId 와 비슷
+            - servlet 3.1 이하에서 작동 및 기본값
+            - 이전 session 의 모든 속성값을 그대로 사용할 수 있음
+
+         - newSession
+            - changeSessionId 와 비슷
+            - 이전의 session 에서의 속성값을 다 초기화됨
+         */
+//        http
+//            .sessionManagement()
+//            .sessionFixation().changeSessionId() // default 가 changeSessionId - servlet 3.1 기본값
+//        ;
+
+        /*
+         세션 정책
+
+         - SessionCreationPolicy.ALWAYS : Spring Security 가 항상 세션을 생성
+         - SessionCreationPolicy.IF_REQUIRED : Spring Security 가 필요 시 생성(기본값)
+         - SessionCreationPolicy.NEVER : Spring Security 가 생성하지 않지만, 이미 존재하면 사용
+         - SessionCreationPolicy.STATELESS : Spring Security 가 생성하지 않고 존재해도 사용하지 않음
+            - session 을 전혀 사용하지 않을 경우
+            - jwt 등
+         */
+//        http
+//            .sessionManagement()
+//            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+//        ;
     }
 }
