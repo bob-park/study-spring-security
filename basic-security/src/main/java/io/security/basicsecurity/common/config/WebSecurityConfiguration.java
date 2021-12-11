@@ -329,6 +329,25 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 response.sendRedirect(redirectUrl);
             })
         ;
+
+        /*
+          Form 인증 - CSRF (사이트 간 요청 위조)
+
+          1. 사용자가 로그인 후 쿠키를 발급받음
+          2. 공격자가 링크를 이용자에게 전달
+          3. 사용자가 링크를 클릭하여 공격용 웹페이지에 접속
+          4. 사용자가 공격용 페이지를 열면, 브라우저는 이미지 파일을 받아오기 위해 공격용 URL 을 연다.
+          5. 사용자의 승인이나 인지 벗이 배송지가 등록됨으로써 공격이 완료된다.
+
+          From 인증 - CsrfFilter
+
+          - 모든 요청에 랜덤하게 생성된 토큰을 HTTP 파라미터로 요구
+          - 요청 시 전달되는 토큰 값과 서버에 저장된 실제 값과 비교한 후 만약 일치하지 않으면 요청은 실패한다.
+         */
+        http
+            .csrf() // 기본 활성화되어 있음
+            .disable() // 비활성화
+            ;
     }
 
     /**
