@@ -1,6 +1,6 @@
 ## spring
-spring:
-  security:
-    user: # 기본적인 계정을 설정할 수 있음
-      name: user
-      password: 12345
+#spring:
+#  security:
+#    user: # 기본적인 계정을 설정할 수 있음
+#      name: user
+#      password: 12345
