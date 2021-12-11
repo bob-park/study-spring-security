@@ -10,6 +10,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 
 /**
  * 사용자 정의 보안 기능 구현
@@ -271,14 +274,61 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         http
             .authorizeRequests()
+            .antMatchers("/login").permitAll()
             .antMatchers("/user").hasRole("USER")
             .antMatchers("/admin/pay").hasRole("ADMIN")
             .antMatchers("/admin/**").access("hasRole('ADMIN') or hasRole('SYS')")
             .anyRequest().authenticated()
         ;
 
+//        http
+//            .formLogin();
+
+
+        /*
+         인증/인가 API
+
+         ExceptionTranslationFilter
+
+         - AuthenticationException
+            - 인증 예외 처리
+                1. AuthenticationEntryPoint 호출
+                    - 로그인 페이지 이동, 401 오류 코드 전달 등
+                    - implement 가능
+
+                2. 인증 예외가 발생하기 전의 요청 정보를 저장
+                    - RequestCache : 사용자의 이전 요청 정보를 Session 에 정하고 이를 꺼내 오는 Cache 메커니즘
+                        - SavedRequest : 사용자가 요청했던 request 파라미터 값들, 그 당시의 헤더값들 등이 저장
+
+         - AccessDeniedException
+            - 인가 예외 처리
+                - AccessDeniedHandler 에서 예외 처리하도록 제공
+         */
         http
-            .formLogin();
+            .exceptionHandling() // 예외처리 기능이 작동함
+//            .authenticationEntryPoint((request, response, authException) -> {
+//                // Spring Security 가 제공하는 login 페이지가 아닌 구현한 Controller 로 이동된다.
+//                // 따라서, 구현되어 있어야 정상 동작 한다.
+//                response.sendRedirect("/login");
+//            }) // 인증 실패 시 처리
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.sendRedirect("/denied");
+            }) // 인증 실패 시 처리
+        ;
+
+        http
+            .formLogin()
+            .successHandler((request, response, authentication) -> {
+                // 인증 실패 시 RequestCache 에 사용자가 가고자 하는 url 및 요청 파라미터 정보 등을 저장하고 있어, 로그인 성공시 바로 이동시킬 수 있다.
+                RequestCache requestCache = new HttpSessionRequestCache();
+
+                SavedRequest savedRequest = requestCache.getRequest(request, response);
+
+                String redirectUrl = savedRequest.getRedirectUrl();
+
+                response.sendRedirect(redirectUrl);
+            })
+        ;
     }
 
     /**

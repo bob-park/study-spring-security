@@ -6,6 +6,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UserController {
 
+    @GetMapping("login")
+    public String login() {
+        return "login";
+    }
+
     @GetMapping("/user")
     public String user() {
         return "user";
