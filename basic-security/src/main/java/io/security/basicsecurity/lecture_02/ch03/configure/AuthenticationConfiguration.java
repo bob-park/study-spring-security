@@ -24,8 +24,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
  * </pre>
  *
  */
-@EnableWebSecurity
-@Configuration
+//@EnableWebSecurity
+//@Configuration
 public class AuthenticationConfiguration extends WebSecurityConfigurerAdapter {
 
 }
