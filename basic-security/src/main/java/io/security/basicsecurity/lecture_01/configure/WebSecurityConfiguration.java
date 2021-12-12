@@ -1,4 +1,4 @@
-package io.security.basicsecurity.common.config;
+package io.security.basicsecurity.lecture_01.configure;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
