@@ -31,8 +31,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
  * </pre>
  */
 @Slf4j
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 @Order(0)
 // ! WebSecurityConfigurers 가 초기화 될때 순서를 지정하지 않을 경우 예외가 발생한다.
 // Order 의 순서에 따라 SecurityFilterChains List 에 순차적으로 add 된다.
@@ -51,7 +51,7 @@ public class Ch02Configuration extends WebSecurityConfigurerAdapter {
 }
 
 @Order(1)
-@Configuration
+//@Configuration
 class SecurityConfiguration2 extends WebSecurityConfigurerAdapter {
 
     @Override
