@@ -35,7 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SecurityController {
 
     @GetMapping(path = "/")
-    public String index(HttpSession session, @AuthenticationPrincipal User user) {
+    public String index(HttpSession session, @AuthenticationPrincipal User user,
+        Authentication auth1) {
 
         Authentication auth2 = SecurityContextHolder.getContext().getAuthentication();
 

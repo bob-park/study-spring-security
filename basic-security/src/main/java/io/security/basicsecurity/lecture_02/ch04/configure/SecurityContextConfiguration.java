@@ -26,13 +26,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
  *
  *
  *      - Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+ *          - Controller 에서 사용할 경우 Authentication 을 파라미터 받으면 Spring Context 에서 넣어줌
  *          - Controller 에서 파라미터에 @AuthenticationPrincipal 쓰면 바로 사용가능한 줄 알았는데, 안되네...쩝...
  *              - @AuthenticationPrincipal 은 Spring Security 의 UserDetail 을 구현한 클래스를 주입받는 것이였음
  *              - 따라서, Authentication.getPrincipal() 이였다.
  * </pre>
  */
-@EnableWebSecurity
-@Configuration
+//@EnableWebSecurity
+//@Configuration
 public class SecurityContextConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
