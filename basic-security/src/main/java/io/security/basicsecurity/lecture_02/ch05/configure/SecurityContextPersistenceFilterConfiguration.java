@@ -30,7 +30,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
  * </pre>
  */
 @EnableWebSecurity
-@Configuration
+//@Configuration
 public class SecurityContextPersistenceFilterConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
