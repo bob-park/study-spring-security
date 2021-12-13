@@ -1,5 +1,14 @@
 package io.security.basicsecurity.controller;
 
+import java.security.Principal;
+import javax.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,14 +30,35 @@ import org.springframework.web.bind.annotation.RestController;
  *          - 기본적인 보안 기능 외에 시스템에서 필요로 하는 더 세부적이고 추가적인 보안 기능이 필요
  * </pre>
  */
+@Slf4j
 @RestController
 public class SecurityController {
 
     @GetMapping(path = "/")
-    public String index() {
+    public String index(HttpSession session, @AuthenticationPrincipal User user,
+        Authentication auth1) {
+
+        Authentication auth2 = SecurityContextHolder.getContext().getAuthentication();
+
+        SecurityContext context = (SecurityContext) session.getAttribute(
+            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+
+        Authentication auth3 = context.getAuthentication();
 
         return "home";
 
+    }
+
+    @GetMapping("thread")
+    public String thread() {
+
+        new Thread(() -> {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            log.info("authentication={}", authentication);
+
+        }).start();
+
+        return "thread";
     }
 
     /**

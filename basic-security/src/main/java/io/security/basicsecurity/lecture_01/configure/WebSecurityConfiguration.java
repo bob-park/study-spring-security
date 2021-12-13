@@ -1,6 +1,5 @@
-package io.security.basicsecurity.common.config;
+package io.security.basicsecurity.lecture_01.configure;
 
-import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +7,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
@@ -37,8 +35,8 @@ import org.springframework.security.web.savedrequest.SavedRequest;
  */
 @Slf4j
 @RequiredArgsConstructor
-@EnableWebSecurity // ! 반드시 선언해주어야 웹 보안이 설정된다.
-@Configuration
+//@EnableWebSecurity // ! 반드시 선언해주어야 웹 보안이 설정된다.
+//@Configuration
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
