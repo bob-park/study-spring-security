@@ -38,6 +38,8 @@ dependencies {
     // model-mapper
     implementation 'org.modelmapper:modelmapper:2.4.5'
 
+    // p6spy
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
 
 
 }
