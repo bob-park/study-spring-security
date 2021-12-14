@@ -53,7 +53,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         ;
 
         http
-            .formLogin();
+            .formLogin()
+            .loginPage("/login")
+            .loginProcessingUrl("/login_proc")
+            .defaultSuccessUrl("/")
+            .permitAll();
     }
 
     /**
