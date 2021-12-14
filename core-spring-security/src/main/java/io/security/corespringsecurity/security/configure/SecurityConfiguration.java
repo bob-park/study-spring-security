@@ -1,5 +1,7 @@
 package io.security.corespringsecurity.security.configure;
 
+import io.security.corespringsecurity.security.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,9 +13,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private final CustomUserDetailsService userDetailsService;
 
     /**
      * WebIgnore 설정
@@ -30,17 +35,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-
-        String password = passwordEncoder().encode("12345");
-
-        // 추후 권한 계층으로 할것임
-        auth.inMemoryAuthentication()
-            .withUser("user").password(password).roles("USER")
-            .and()
-            .withUser("manager").password(password).roles("MANAGER", "USER")
-            .and()
-            .withUser("admin").password(password).roles("ADMIN", "MANAGER", "USER")
-        ;
+        auth.userDetailsService(userDetailsService);
     }
 
     @Override
