@@ -1,0 +1,26 @@
+## spring
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:postgresql://localhost:15432/study_security
+    username: study_security
+    password: 12345
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  thymeleaf:
+    cache: false
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+
