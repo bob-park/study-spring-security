@@ -46,6 +46,7 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatcher("/api/**") // 해당 pattern 만 이 configuration 이 작동하도록 한다.
             .authorizeRequests()
             .antMatchers("/api/messages").hasRole("MANAGER")
+            .antMatchers("/api/login").permitAll()
             .anyRequest().authenticated();
 
 //        http
@@ -55,7 +56,7 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
 //            .addFilterBefore(ajaxLoginProcessingFilter(),
 //                UsernamePasswordAuthenticationFilter.class); // target class 이전에 위치
 
-        http.csrf().disable();
+//        http.csrf().disable();
 
         http
             .exceptionHandling()

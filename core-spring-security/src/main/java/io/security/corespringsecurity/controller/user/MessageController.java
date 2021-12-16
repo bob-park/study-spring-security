@@ -1,7 +1,11 @@
 package io.security.corespringsecurity.controller.user;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -14,8 +18,9 @@ public class MessageController {
     }
 
     @ResponseBody
-    @GetMapping(path = "api/messages")
-    public String apiMessage() {
-        return "messages ok";
+    @PostMapping(path = "api/messages")
+    public Map<String, Object> apiMessage() {
+
+        return Collections.singletonMap("data", "ok");
     }
 }
