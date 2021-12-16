@@ -1,5 +1,6 @@
 package io.security.corespringsecurity.security.configure;
 
+import io.security.corespringsecurity.security.filer.AjaxLoginProcessingFilter;
 import io.security.corespringsecurity.security.handler.CustomAccessDeniedHandler;
 import io.security.corespringsecurity.security.provider.CustomAuthenticationProvider;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 @RequiredArgsConstructor
@@ -74,6 +76,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
             .exceptionHandling()
             .accessDeniedHandler(accessDeniedHandler());
+
+        http
+//            .addFilter() // 가장 마지막에 추가
+//            .addFilterAfter() // target class 다음에 위치
+//            .addFilterAt() // target class 에 대치
+            .addFilterBefore(ajaxLoginProcessingFilter(),
+                UsernamePasswordAuthenticationFilter.class); // target class 이전에 위치
+
+        http.csrf().disable();
     }
 
     /**
@@ -109,8 +120,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AccessDeniedHandler accessDeniedHandler(){
+    public AccessDeniedHandler accessDeniedHandler() {
         return new CustomAccessDeniedHandler("/denied");
+    }
+
+    @Bean
+    public AjaxLoginProcessingFilter ajaxLoginProcessingFilter() throws Exception {
+        AjaxLoginProcessingFilter ajaxLoginProcessingFilter = new AjaxLoginProcessingFilter();
+
+        // ! 반드시 AuthenticationManager 를 set 해주어야 한다.
+        ajaxLoginProcessingFilter.setAuthenticationManager(authenticationManagerBean());
+
+        return ajaxLoginProcessingFilter;
     }
 
 }
