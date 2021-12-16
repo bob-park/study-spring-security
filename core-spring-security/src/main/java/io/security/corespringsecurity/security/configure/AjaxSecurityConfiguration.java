@@ -48,12 +48,12 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/messages").hasRole("MANAGER")
             .anyRequest().authenticated();
 
-        http
-//            .addFilter() // 가장 마지막에 추가
-//            .addFilterAfter() // target class 다음에 위치
-//            .addFilterAt() // target class 에 대치
-            .addFilterBefore(ajaxLoginProcessingFilter(),
-                UsernamePasswordAuthenticationFilter.class); // target class 이전에 위치
+//        http
+////            .addFilter() // 가장 마지막에 추가
+////            .addFilterAfter() // target class 다음에 위치
+////            .addFilterAt() // target class 에 대치
+//            .addFilterBefore(ajaxLoginProcessingFilter(),
+//                UsernamePasswordAuthenticationFilter.class); // target class 이전에 위치
 
         http.csrf().disable();
 
@@ -61,22 +61,26 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
             .authenticationEntryPoint(new AjaxLoginAuthenticationEntryPoint())
             .accessDeniedHandler(ajaxAccessDeniedHandler());
+
+
+        // customDSL 로 설정
+        customConfigurerAjax(http);
     }
 
-    @Bean
-    public AjaxLoginProcessingFilter ajaxLoginProcessingFilter() throws Exception {
-        AjaxLoginProcessingFilter ajaxLoginProcessingFilter = new AjaxLoginProcessingFilter();
-
-        // ! 반드시 AuthenticationManager 를 set 해주어야 한다.
-        ajaxLoginProcessingFilter.setAuthenticationManager(authenticationManagerBean());
-
-        ajaxLoginProcessingFilter
-            .setAuthenticationSuccessHandler(ajaxAuthenticationSuccessHandler());
-        ajaxLoginProcessingFilter
-            .setAuthenticationFailureHandler(ajaxAuthenticationFailureHandler());
-
-        return ajaxLoginProcessingFilter;
-    }
+//    @Bean
+//    public AjaxLoginProcessingFilter ajaxLoginProcessingFilter() throws Exception {
+//        AjaxLoginProcessingFilter ajaxLoginProcessingFilter = new AjaxLoginProcessingFilter();
+//
+//        // ! 반드시 AuthenticationManager 를 set 해주어야 한다.
+//        ajaxLoginProcessingFilter.setAuthenticationManager(authenticationManagerBean());
+//
+//        ajaxLoginProcessingFilter
+//            .setAuthenticationSuccessHandler(ajaxAuthenticationSuccessHandler());
+//        ajaxLoginProcessingFilter
+//            .setAuthenticationFailureHandler(ajaxAuthenticationFailureHandler());
+//
+//        return ajaxLoginProcessingFilter;
+//    }
 
     @Bean
     public AuthenticationProvider ajaxAuthenticationProvider() {
@@ -96,5 +100,16 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public AccessDeniedHandler ajaxAccessDeniedHandler() {
         return new AjaxAccessDeniedHandler();
+    }
+
+    private void customConfigurerAjax(HttpSecurity http) throws Exception {
+
+        http
+            .apply(new AjaxLoginConfigurer<>())
+            .successHandlerAjax(ajaxAuthenticationSuccessHandler())
+            .failureHandlerAjax(ajaxAuthenticationFailureHandler())
+            .authenticationManager(authenticationManagerBean())
+            .loginProcessingUrl("/api/login");
+
     }
 }
