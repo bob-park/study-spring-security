@@ -13,11 +13,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import io.security.corespringsecurity.security.common.AjaxLoginAuthenticationEntryPoint;
 import io.security.corespringsecurity.security.filer.AjaxLoginProcessingFilter;
+import io.security.corespringsecurity.security.handler.AjaxAccessDeniedHandler;
 import io.security.corespringsecurity.security.handler.AjaxAuthenticationFailureHandler;
 import io.security.corespringsecurity.security.handler.AjaxAuthenticationSuccessHandler;
 import io.security.corespringsecurity.security.provider.AjaxAuthenticationProvider;
@@ -42,6 +45,7 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
             .antMatcher("/api/**") // 해당 pattern 만 이 configuration 이 작동하도록 한다.
             .authorizeRequests()
+            .antMatchers("/api/messages").hasRole("MANAGER")
             .anyRequest().authenticated();
 
         http
@@ -52,6 +56,11 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 UsernamePasswordAuthenticationFilter.class); // target class 이전에 위치
 
         http.csrf().disable();
+
+        http
+            .exceptionHandling()
+            .authenticationEntryPoint(new AjaxLoginAuthenticationEntryPoint())
+            .accessDeniedHandler(ajaxAccessDeniedHandler());
     }
 
     @Bean
@@ -82,5 +91,10 @@ public class AjaxSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationFailureHandler ajaxAuthenticationFailureHandler() {
         return new AjaxAuthenticationFailureHandler();
+    }
+
+    @Bean
+    public AccessDeniedHandler ajaxAccessDeniedHandler() {
+        return new AjaxAccessDeniedHandler();
     }
 }
