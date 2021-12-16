@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -25,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 @RequiredArgsConstructor
+@Order(1)
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -55,6 +57,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        // and() 메서드를 통해 chaining 이 가능하지만, 가독성을 위해 기능별로 분리하여 작성했다.
         http
             .authorizeRequests()
             .antMatchers("/", "/users", "user/login/**", "/login*").permitAll()
@@ -77,14 +81,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
             .accessDeniedHandler(accessDeniedHandler());
 
-        http
-//            .addFilter() // 가장 마지막에 추가
-//            .addFilterAfter() // target class 다음에 위치
-//            .addFilterAt() // target class 에 대치
-            .addFilterBefore(ajaxLoginProcessingFilter(),
-                UsernamePasswordAuthenticationFilter.class); // target class 이전에 위치
-
-        http.csrf().disable();
     }
 
     /**
@@ -122,16 +118,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return new CustomAccessDeniedHandler("/denied");
-    }
-
-    @Bean
-    public AjaxLoginProcessingFilter ajaxLoginProcessingFilter() throws Exception {
-        AjaxLoginProcessingFilter ajaxLoginProcessingFilter = new AjaxLoginProcessingFilter();
-
-        // ! 반드시 AuthenticationManager 를 set 해주어야 한다.
-        ajaxLoginProcessingFilter.setAuthenticationManager(authenticationManagerBean());
-
-        return ajaxLoginProcessingFilter;
     }
 
 }
