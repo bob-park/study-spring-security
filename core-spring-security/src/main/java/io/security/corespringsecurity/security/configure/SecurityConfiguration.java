@@ -1,12 +1,11 @@
 package io.security.corespringsecurity.security.configure;
 
-import io.security.corespringsecurity.security.handler.CustomAccessDeniedHandler;
-import io.security.corespringsecurity.security.provider.CustomAuthenticationProvider;
-import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -22,7 +21,15 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+import io.security.corespringsecurity.security.handler.CustomAccessDeniedHandler;
+import io.security.corespringsecurity.security.handler.CustomAuthenticationFailureHandler;
+import io.security.corespringsecurity.security.handler.CustomAuthenticationSuccessHandler;
+import io.security.corespringsecurity.security.provider.CustomAuthenticationProvider;
+
+import javax.servlet.http.HttpServletRequest;
+
 @RequiredArgsConstructor
+@Order(1)
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -30,8 +37,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> authenticationDetailsSource;
 
-    private final AuthenticationSuccessHandler successHandler;
-    private final AuthenticationFailureHandler failureHandler;
+//    private final AuthenticationSuccessHandler successHandler;
+//    private final AuthenticationFailureHandler failureHandler;
 
     /**
      * WebIgnore 설정
@@ -53,6 +60,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        // and() 메서드를 통해 chaining 이 가능하지만, 가독성을 위해 기능별로 분리하여 작성했다.
         http
             .authorizeRequests()
             .antMatchers("/", "/users", "user/login/**", "/login*").permitAll()
@@ -67,13 +76,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .loginProcessingUrl("/login_proc")
             .authenticationDetailsSource(authenticationDetailsSource)
             .defaultSuccessUrl("/")
-            .successHandler(successHandler)
-            .failureHandler(failureHandler)
+            .successHandler(customAuthenticationSuccessHandler())
+            .failureHandler(customAuthenticationFailureHandler())
             .permitAll();
 
         http
             .exceptionHandling()
             .accessDeniedHandler(accessDeniedHandler());
+
     }
 
     /**
@@ -109,8 +119,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AccessDeniedHandler accessDeniedHandler(){
+    public AccessDeniedHandler accessDeniedHandler() {
         return new CustomAccessDeniedHandler("/denied");
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
+        return new CustomAuthenticationSuccessHandler();
+    }
+
+    @Bean
+    public AuthenticationFailureHandler customAuthenticationFailureHandler() {
+        return new CustomAuthenticationFailureHandler();
     }
 
 }
