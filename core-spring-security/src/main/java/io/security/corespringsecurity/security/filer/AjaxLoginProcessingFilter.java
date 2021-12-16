@@ -1,17 +1,22 @@
 package io.security.corespringsecurity.security.filer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.security.corespringsecurity.domain.dto.AccountDto;
-import io.security.corespringsecurity.security.token.AjaxAuthenticationToken;
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.util.StringUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.security.corespringsecurity.domain.dto.AccountDto;
+import io.security.corespringsecurity.security.token.AjaxAuthenticationToken;
+
+import static org.springframework.util.StringUtils.hasText;
 
 /**
  * Ajax 인증
@@ -48,8 +53,8 @@ public class AjaxLoginProcessingFilter extends AbstractAuthenticationProcessingF
 
         AccountDto accountDto = objectMapper.readValue(request.getReader(), AccountDto.class);
 
-        if (!StringUtils.hasText(accountDto.getUsername())
-            || !StringUtils.hasText(accountDto.getPassword())) {
+        if (!hasText(accountDto.getUsername())
+            || !hasText(accountDto.getPassword())) {
             throw new IllegalArgumentException("Username or Password is empty.");
         }
 
