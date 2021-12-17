@@ -24,3 +24,7 @@ spring:
     restart:
       enabled: true
 
+## logging
+logging:
+  level:
+    root: info

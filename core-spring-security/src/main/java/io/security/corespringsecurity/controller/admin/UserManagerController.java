@@ -1,28 +1,27 @@
 package io.security.corespringsecurity.controller.admin;
 
+import lombok.RequiredArgsConstructor;
 
-import io.security.corespringsecurity.domain.dto.AccountDto;
-import io.security.corespringsecurity.domain.entity.Account;
-import io.security.corespringsecurity.domain.entity.Role;
-import io.security.corespringsecurity.service.RoleService;
-import io.security.corespringsecurity.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.List;
+import io.security.corespringsecurity.domain.dto.AccountDto;
+import io.security.corespringsecurity.domain.entity.Account;
+import io.security.corespringsecurity.domain.entity.Role;
+import io.security.corespringsecurity.service.role.RoleService;
+import io.security.corespringsecurity.service.user.UserService;
 
+@RequiredArgsConstructor
 @Controller
 public class UserManagerController {
 	
-	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private RoleService roleService;
+	private final UserService userService;
+	private final RoleService roleService;
 
 	@GetMapping(value="/admin/accounts")
 	public String getUsers(Model model) throws Exception {

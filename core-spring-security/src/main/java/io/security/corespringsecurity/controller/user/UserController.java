@@ -1,15 +1,15 @@
 package io.security.corespringsecurity.controller.user;
 
-import io.security.corespringsecurity.domain.dto.AccountDto;
-import io.security.corespringsecurity.domain.entity.Account;
-import io.security.corespringsecurity.domain.entity.Account.AccountBuilder;
-import io.security.corespringsecurity.service.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import io.security.corespringsecurity.domain.dto.AccountDto;
+import io.security.corespringsecurity.domain.entity.Account;
+import io.security.corespringsecurity.service.user.UserService;
 
 @RequiredArgsConstructor
 @Controller
@@ -38,7 +38,6 @@ public class UserController {
             .email(accountDto.getEmail())
             .password(passwordEncoder.encode(accountDto.getPassword()))
             .age(accountDto.getAge())
-            .role(accountDto.getRole())
             .build();
 
         userService.createUser(account);
