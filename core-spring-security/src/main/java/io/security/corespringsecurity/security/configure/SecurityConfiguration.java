@@ -2,7 +2,6 @@ package io.security.corespringsecurity.security.configure;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
-import org.springframework.security.access.SecurityMetadataSource;
 import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -170,7 +168,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
         return new UrlFilterInvocationSecurityMetadataSource(
-            urlResourcesMapFactoryBean().getObject());
+            urlResourcesMapFactoryBean().getObject(), securityResourceService);
     }
 
     @Bean

@@ -1,6 +1,6 @@
 package io.security.corespringsecurity.security.metadatasource;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +18,7 @@ import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import io.security.corespringsecurity.security.factory.UrlResourcesMapFactoryBean;
+import io.security.corespringsecurity.security.service.SecurityResourceService;
 
 /**
  * Spring Security 의 인가 처리
@@ -55,15 +55,12 @@ import io.security.corespringsecurity.security.factory.UrlResourcesMapFactoryBea
  *       - 사용자의 매 요청마다 요청 정보에 맵핑된 권한 정보 확인
  * </pre>
  */
+@RequiredArgsConstructor
 public class UrlFilterInvocationSecurityMetadataSource implements
     FilterInvocationSecurityMetadataSource {
 
     private final Map<RequestMatcher, List<ConfigAttribute>> requestMap;
-
-    public UrlFilterInvocationSecurityMetadataSource(
-        Map<RequestMatcher, List<ConfigAttribute>> requestMap) {
-        this.requestMap = requestMap;
-    }
+    private final SecurityResourceService securityResourceService;
 
     // 파라미터에 FilterInvocation 가 온다.
     // 하지만, 다른 SecurityMetadataSource 에서도 사용해야하기 떄문에, Type 이 Object 인것
@@ -103,5 +100,10 @@ public class UrlFilterInvocationSecurityMetadataSource implements
     @Override
     public boolean supports(Class<?> clazz) {
         return FilterInvocation.class.isAssignableFrom(clazz);
+    }
+
+    public void reload() {
+        requestMap.clear();
+        requestMap.putAll(securityResourceService.getResourceList());
     }
 }
