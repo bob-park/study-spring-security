@@ -2,6 +2,8 @@ package io.security.corespringsecurity.security.configure;
 
 import lombok.RequiredArgsConstructor;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +28,31 @@ import io.security.corespringsecurity.security.handler.CustomAuthenticationFailu
 import io.security.corespringsecurity.security.handler.CustomAuthenticationSuccessHandler;
 import io.security.corespringsecurity.security.provider.CustomAuthenticationProvider;
 
-import javax.servlet.http.HttpServletRequest;
-
+/**
+ * Spring Security 의 인가 처리
+ *
+ * <pre>
+ *       - http.antMatcher("user").access("hasRole('USER')")
+ *          - 인증 정보
+ *              - 사용자
+ *          - 요청 정보
+ *              - 자원
+ *          - 권한 정보
+ *              - 권한
+ *  </pre>
+ * <p>
+ * <p>
+ * SecurityMetadataSource
+ *
+ * <pre>
+ *      - 자원에 설정된 권한정보를 추출하도록 구현
+ *
+ *      - FilterInvocationSecurityMetadataSource
+ *          - Url 권한 정보 추출
+ *      - MethodSecurityMetadataSource
+ *          - Method 권한 정보 추출
+ * </pre>
+ */
 @RequiredArgsConstructor
 @Order(1)
 @EnableWebSecurity
