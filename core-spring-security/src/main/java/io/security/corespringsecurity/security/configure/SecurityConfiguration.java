@@ -2,12 +2,20 @@ package io.security.corespringsecurity.security.configure;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.SecurityMetadataSource;
+import org.springframework.security.access.vote.AffirmativeBased;
+import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -19,6 +27,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -26,6 +36,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import io.security.corespringsecurity.security.handler.CustomAccessDeniedHandler;
 import io.security.corespringsecurity.security.handler.CustomAuthenticationFailureHandler;
 import io.security.corespringsecurity.security.handler.CustomAuthenticationSuccessHandler;
+import io.security.corespringsecurity.security.metadatasource.UrlFilterInvocationSecurityMetadataSource;
 import io.security.corespringsecurity.security.provider.CustomAuthenticationProvider;
 
 /**
@@ -51,6 +62,16 @@ import io.security.corespringsecurity.security.provider.CustomAuthenticationProv
  *          - Url 권한 정보 추출
  *      - MethodSecurityMetadataSource
  *          - Method 권한 정보 추출
+ * </pre>
+ * <p>
+ * <p>
+ * FilterInvocationSecurityMetadataSource
+ *
+ * <pre>
+ *       - 사용자가 접근하고자 하는 URL 작원에 대한 정보를 추출
+ *       - AccessDecisionManager 에게 전달하여 인가 처리 수행
+ *       - DB 로부터 자원 및 권한 정보를 맵핑하여 Map 으로 관리
+ *       - 사용자의 매 요청마다 요청 정보에 맵핑된 권한 정보 확인
  * </pre>
  */
 @RequiredArgsConstructor
@@ -86,13 +107,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        // and() 메서드를 통해 chaining 이 가능하지만, 가독성을 위해 기능별로 분리하여 작성했다.
+        // * and() 메서드를 통해 chaining 이 가능하지만, 가독성을 위해 기능별로 분리하여 작성했다.
         http
             .authorizeRequests()
-            .antMatchers("/", "/users", "user/login/**", "/login*").permitAll()
-            .antMatchers("/mypage").hasRole("USER")
-            .antMatchers("/messages").hasRole("MANAGER")
-            .antMatchers("/config").hasRole("ADMIN")
+//            .antMatchers("/", "/users", "user/login/**", "/login*").permitAll()
+//            .antMatchers("/mypage").hasRole("USER")
+//            .antMatchers("/messages").hasRole("MANAGER")
+//            .antMatchers("/config").hasRole("ADMIN")
             .anyRequest().authenticated();
 
         http
@@ -104,6 +125,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .successHandler(customAuthenticationSuccessHandler())
             .failureHandler(customAuthenticationFailureHandler())
             .permitAll();
+
+        http
+            // 기본 Filter 보다 먼저 확인하도록 한다.
+            // ! 하지만, FilterSecurityInterceptor 는 한번만 적용된다.
+            // ! 가장 마지막에 존재하는 FilterSecurityInterceptor 보다 앞에 위치한 customFilterSecurityInterceptor 가 먼저 실행 되면, 그 요청은 다음 필터인 FilterSecurityInterceptor 를 실행하지 않고, 바로 다음 filter 로 넘겨버린다.
+            // ! 따라서, 위에 설정한 http.antMatcher() 는 더 이상 동작하지 않는다.
+            .addFilterBefore(customFilterSecurityInterceptor(), FilterSecurityInterceptor.class);
 
         http
             .exceptionHandling()
@@ -156,6 +184,34 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationFailureHandler customAuthenticationFailureHandler() {
         return new CustomAuthenticationFailureHandler();
+    }
+
+    @Bean
+    public FilterSecurityInterceptor customFilterSecurityInterceptor() throws Exception {
+        FilterSecurityInterceptor filterSecurityInterceptor = new FilterSecurityInterceptor();
+
+        filterSecurityInterceptor.setSecurityMetadataSource(
+            urlFilterInvocationSecurityMetadataSource());
+        filterSecurityInterceptor.setAccessDecisionManager(affirmativeBased());
+        filterSecurityInterceptor.setAuthenticationManager(authenticationManagerBean());
+
+        return filterSecurityInterceptor;
+    }
+
+    @Bean
+    public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
+        return new UrlFilterInvocationSecurityMetadataSource();
+    }
+
+    @Bean
+    public AccessDecisionManager affirmativeBased() {
+
+        return new AffirmativeBased(getAccessDecisionVoters());
+    }
+
+    @Bean
+    public List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
+        return List.of(new RoleVoter());
     }
 
 }
