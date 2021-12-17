@@ -31,7 +31,7 @@ public class Account {
     private String username;
     private String password;
     private String email;
-    private String age;
+    private Integer age;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @JoinTable(name = "account_roles", joinColumns = {
@@ -40,7 +40,7 @@ public class Account {
     private Set<Role> userRoles = new HashSet<>();
 
     @Builder
-    protected Account(Long id, String username, String password, String email, String age,
+    protected Account(Long id, String username, String password, String email, Integer age,
         Set<Role> userRoles) {
         this.id = id;
         this.username = username;
