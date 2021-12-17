@@ -33,47 +33,14 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+import io.security.corespringsecurity.security.factory.UrlResourcesMapFactoryBean;
 import io.security.corespringsecurity.security.handler.CustomAccessDeniedHandler;
 import io.security.corespringsecurity.security.handler.CustomAuthenticationFailureHandler;
 import io.security.corespringsecurity.security.handler.CustomAuthenticationSuccessHandler;
 import io.security.corespringsecurity.security.metadatasource.UrlFilterInvocationSecurityMetadataSource;
 import io.security.corespringsecurity.security.provider.CustomAuthenticationProvider;
+import io.security.corespringsecurity.security.service.SecurityResourceService;
 
-/**
- * Spring Security 의 인가 처리
- *
- * <pre>
- *       - http.antMatcher("user").access("hasRole('USER')")
- *          - 인증 정보
- *              - 사용자
- *          - 요청 정보
- *              - 자원
- *          - 권한 정보
- *              - 권한
- *  </pre>
- * <p>
- * <p>
- * SecurityMetadataSource
- *
- * <pre>
- *      - 자원에 설정된 권한정보를 추출하도록 구현
- *
- *      - FilterInvocationSecurityMetadataSource
- *          - Url 권한 정보 추출
- *      - MethodSecurityMetadataSource
- *          - Method 권한 정보 추출
- * </pre>
- * <p>
- * <p>
- * FilterInvocationSecurityMetadataSource
- *
- * <pre>
- *       - 사용자가 접근하고자 하는 URL 작원에 대한 정보를 추출
- *       - AccessDecisionManager 에게 전달하여 인가 처리 수행
- *       - DB 로부터 자원 및 권한 정보를 맵핑하여 Map 으로 관리
- *       - 사용자의 매 요청마다 요청 정보에 맵핑된 권한 정보 확인
- * </pre>
- */
 @RequiredArgsConstructor
 @Order(1)
 @EnableWebSecurity
@@ -82,6 +49,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> authenticationDetailsSource;
+
+    private final SecurityResourceService securityResourceService;
 
 //    private final AuthenticationSuccessHandler successHandler;
 //    private final AuthenticationFailureHandler failureHandler;
@@ -200,7 +169,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public FilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource() {
-        return new UrlFilterInvocationSecurityMetadataSource();
+        return new UrlFilterInvocationSecurityMetadataSource(
+            urlResourcesMapFactoryBean().getObject());
     }
 
     @Bean
@@ -212,6 +182,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
         return List.of(new RoleVoter());
+    }
+
+    @Bean
+    public UrlResourcesMapFactoryBean urlResourcesMapFactoryBean() {
+        return new UrlResourcesMapFactoryBean(securityResourceService);
     }
 
 }
