@@ -2,10 +2,12 @@ package io.security.corespringsecurity.security.listener;
 
 import lombok.RequiredArgsConstructor;
 
+import io.security.corespringsecurity.domain.entity.AccessIp;
 import io.security.corespringsecurity.domain.entity.Account;
 import io.security.corespringsecurity.domain.entity.Resources;
 import io.security.corespringsecurity.domain.entity.Role;
 import io.security.corespringsecurity.domain.entity.RoleHierarchy;
+import io.security.corespringsecurity.repository.AccessIpRepository;
 import io.security.corespringsecurity.repository.ResourcesRepository;
 import io.security.corespringsecurity.repository.RoleHierarchyRepository;
 import io.security.corespringsecurity.repository.RoleRepository;
@@ -34,6 +36,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     private final ResourcesRepository resourcesRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleHierarchyRepository roleHierarchyRepository;
+    private final AccessIpRepository accessIpRepository;
 
     private static AtomicInteger count = new AtomicInteger(0);
 
@@ -46,6 +49,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         }
 
         setupSecurityResources();
+        setupIpAddressData();
 
         alreadySetup = true;
     }
@@ -62,7 +66,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         createRoleHierarchyIfNotFound(managerRole, adminRole);
         createRoleHierarchyIfNotFound(userRole, managerRole);
-
 
 //        Set<Role> roles1 = new HashSet<>();
 //
@@ -153,7 +156,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             .findByChildName(childRole.getRoleName())
             .orElse(null);
 
-        if(roleHierarchy == null){
+        if (roleHierarchy == null) {
             roleHierarchy = RoleHierarchy
                 .builder()
                 .childName(childRole.getRoleName())
@@ -163,6 +166,20 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         RoleHierarchy childRoleHierarchy = roleHierarchyRepository.save(roleHierarchy);
 
         childRoleHierarchy.setParentName(parentRoleHierarchy);
+
+    }
+
+    private void setupIpAddressData() {
+        AccessIp accessIp = accessIpRepository.findByIpAddress("0:0:0:0:0:0:0:1").orElse(null);
+
+        if (accessIp == null) {
+            accessIp = AccessIp
+                .builder()
+                .ipAddress("0:0:0:0:0:0:0:1")
+                .build();
+
+            accessIpRepository.save(accessIp);
+        }
 
     }
 }
