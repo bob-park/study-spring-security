@@ -32,6 +32,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import io.security.corespringsecurity.security.factory.UrlResourcesMapFactoryBean;
+import io.security.corespringsecurity.security.filer.PermitAllFilter;
 import io.security.corespringsecurity.security.handler.CustomAccessDeniedHandler;
 import io.security.corespringsecurity.security.handler.CustomAuthenticationFailureHandler;
 import io.security.corespringsecurity.security.handler.CustomAuthenticationSuccessHandler;
@@ -52,6 +53,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 //    private final AuthenticationSuccessHandler successHandler;
 //    private final AuthenticationFailureHandler failureHandler;
+
+    private final String[] permitAllResources = {"/", "/login", "/user/login/**"};
 
     /**
      * WebIgnore 설정
@@ -97,7 +100,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // 기본 Filter 보다 먼저 확인하도록 한다.
             // ! 하지만, FilterSecurityInterceptor 는 한번만 적용된다.
             // ! 가장 마지막에 존재하는 FilterSecurityInterceptor 보다 앞에 위치한 customFilterSecurityInterceptor 가 먼저 실행 되면, 그 요청은 다음 필터인 FilterSecurityInterceptor 를 실행하지 않고, 바로 다음 filter 로 넘겨버린다.
-            // ! 따라서, 위에 설정한 http.antMatcher() 는 더 이상 동작하지 않는다.
+            // ! http.antMatcher() 는 Spring Security 에서 기본적으로 생성하는 SecurityMetadataSource 를 통해 FilterSecurityInterceptor 에서 인가처리를 진행한다.
+            // ! 따라서, Custom 한 FilterSecurityInterceptor 를 설정할 경우, 위에 설정한 http.antMatcher() 는 더 이상 동작하지 않는다.
             .addFilterBefore(customFilterSecurityInterceptor(), FilterSecurityInterceptor.class);
 
         http
@@ -154,15 +158,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public FilterSecurityInterceptor customFilterSecurityInterceptor() throws Exception {
-        FilterSecurityInterceptor filterSecurityInterceptor = new FilterSecurityInterceptor();
+    public PermitAllFilter customFilterSecurityInterceptor() throws Exception {
+        PermitAllFilter permitAllFilter = new PermitAllFilter(permitAllResources);
 
-        filterSecurityInterceptor.setSecurityMetadataSource(
+        permitAllFilter.setSecurityMetadataSource(
             urlFilterInvocationSecurityMetadataSource());
-        filterSecurityInterceptor.setAccessDecisionManager(affirmativeBased());
-        filterSecurityInterceptor.setAuthenticationManager(authenticationManagerBean());
+        permitAllFilter.setAccessDecisionManager(affirmativeBased());
+        permitAllFilter.setAuthenticationManager(authenticationManagerBean());
 
-        return filterSecurityInterceptor;
+        return permitAllFilter;
     }
 
     @Bean
