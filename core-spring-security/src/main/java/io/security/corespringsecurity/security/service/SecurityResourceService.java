@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
@@ -14,6 +14,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.security.corespringsecurity.domain.entity.AccessIp;
+import io.security.corespringsecurity.repository.AccessIpRepository;
 import io.security.corespringsecurity.repository.ResourcesRepository;
 
 @Slf4j
@@ -22,6 +24,7 @@ import io.security.corespringsecurity.repository.ResourcesRepository;
 public class SecurityResourceService {
 
     private final ResourcesRepository resourcesRepository;
+    private final AccessIpRepository accessIpRepository;
 
     public LinkedHashMap<RequestMatcher, List<ConfigAttribute>> getResourceList() {
 
@@ -42,4 +45,12 @@ public class SecurityResourceService {
 
     }
 
+    public List<String> getAccessIpList() {
+
+        return accessIpRepository
+            .findAll()
+            .stream()
+            .map(AccessIp::getIpAddress)
+            .collect(Collectors.toList());
+    }
 }
