@@ -12,6 +12,7 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
+        enable_lazy_load_no_trans: true # 실무에선 사용하지 말자
         format_sql: true
         jdbc:
           lob:
@@ -24,3 +25,7 @@ spring:
     restart:
       enabled: true
 
+## logging
+logging:
+  level:
+    root: info
