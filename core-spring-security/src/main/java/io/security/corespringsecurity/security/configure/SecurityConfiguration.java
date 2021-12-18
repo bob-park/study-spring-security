@@ -2,6 +2,7 @@ package io.security.corespringsecurity.security.configure;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,8 +13,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.AffirmativeBased;
-import org.springframework.security.access.vote.RoleVoter;
+import org.springframework.security.access.vote.RoleHierarchyVoter;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -40,20 +42,6 @@ import io.security.corespringsecurity.security.metadatasource.UrlFilterInvocatio
 import io.security.corespringsecurity.security.provider.CustomAuthenticationProvider;
 import io.security.corespringsecurity.security.service.SecurityResourceService;
 
-/**
- * URL 방식 - 권한 계층 적용하기
- *
- * <pre>
- *      ! Spring Security 에서 기본적으로 ROLE_USER, ROLE_ADMIN 등 다른 권한으로 취급 (문자열 차이)
- *
- *      - RoleHierarchy
- *          - 상위 계층 Role 은 하위 계층 Role 의 자원에 접근 가능함
- *          - ROLE_ADMIN > ROLE_MANAGER > ROLE_USER 일 경우 ROLE_ADMIN 만 있으면 하위 ROLE 의 권한을 모두 포함한다.
- *
- *      - RoleHierarchyVoter
- *          - RoleHierarchy 를 생성자로 받으며 이 클래스에서 설정한 규칙이 적용되어 심사함
- * </pre>
- */
 @RequiredArgsConstructor
 @Order(1)
 @EnableWebSecurity
@@ -197,7 +185,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public List<AccessDecisionVoter<?>> getAccessDecisionVoters() {
-        return List.of(new RoleVoter());
+
+        List<AccessDecisionVoter<? extends Object>> accessDecisionVoters = new ArrayList<>();
+
+        accessDecisionVoters.add(roleVoter());
+
+        return accessDecisionVoters;
     }
 
     @Bean
@@ -205,4 +198,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new UrlResourcesMapFactoryBean(securityResourceService);
     }
 
+    @Bean
+    public AccessDecisionVoter<? extends Object> roleVoter() {
+        return new RoleHierarchyVoter(roleHierarchy());
+    }
+
+    @Bean
+    public RoleHierarchyImpl roleHierarchy() {
+        return new RoleHierarchyImpl();
+    }
 }
