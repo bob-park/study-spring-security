@@ -1,6 +1,7 @@
 package io.security.corespringsecurity.controller.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,7 @@ import io.security.corespringsecurity.domain.dto.AccountDto;
 import io.security.corespringsecurity.domain.entity.Account;
 import io.security.corespringsecurity.service.user.UserService;
 
+@Slf4j
 @RequiredArgsConstructor
 @Controller
 public class UserController {
@@ -21,8 +23,6 @@ public class UserController {
 
     @GetMapping(value = "/mypage")
     public String myPage() throws Exception {
-
-        userService.order();
 
         return "user/mypage";
     }
@@ -45,6 +45,13 @@ public class UserController {
         userService.createUser(account);
 
         return "redirect:/";
+    }
+
+    @GetMapping(path = "order")
+    public String order(){
+        userService.order();
+
+        return "user/mypage";
     }
 
 
