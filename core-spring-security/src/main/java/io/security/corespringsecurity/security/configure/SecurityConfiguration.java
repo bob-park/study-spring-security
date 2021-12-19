@@ -19,7 +19,6 @@ import org.springframework.security.access.vote.RoleHierarchyVoter;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -44,26 +43,8 @@ import io.security.corespringsecurity.security.provider.CustomAuthenticationProv
 import io.security.corespringsecurity.security.service.SecurityResourceService;
 import io.security.corespringsecurity.security.voter.IpAddressVoter;
 
-/**
- * Method 방식 - 주요 아키텍처
- *
- * <pre>
- *      - 인가 처리를 위한 초기화 과정과 진행
- *          - 초기화 과정
- *              1. 초기화 시 전체 Bean 을 검사하면서 보안이 설정된 Method 가 있는지 탐색
- *              2. Bean 의 Proxy 객체 생성
- *              3. 보안 Method 에 인가처리(권한심사) 기능을 하는 Advice 등록
- *              4. Bean 참조시 실제 Bean 이 아닌 Proxy Bean 객체를 참조
- *
- *          - 진행 과정
- *              1. Method 호출 시 Proxy 객체를 통해 Method 호출
- *              2. Advice 가 등록되어 있다면 Advice 를 작동하게 하여 인가 처리
- *              3. 권한 심사 통과하면 실제 Bean 의 Method 를 호출한다.
- * </pre>
- */
 @RequiredArgsConstructor
 @Order(1)
-@EnableMethodSecurity(securedEnabled = true)
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
