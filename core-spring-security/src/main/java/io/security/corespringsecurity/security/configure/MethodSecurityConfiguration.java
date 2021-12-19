@@ -2,18 +2,15 @@ package io.security.corespringsecurity.security.configure;
 
 import lombok.RequiredArgsConstructor;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.intercept.RunAsManager;
 import org.springframework.security.access.method.MapBasedMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
+import io.security.corespringsecurity.security.aop.CustomMethodSecurityInterceptor;
 import io.security.corespringsecurity.security.factory.MethodResourceMapFactoryBean;
 import io.security.corespringsecurity.security.processor.ProtectPointcutPostProcessor;
 import io.security.corespringsecurity.security.service.SecurityResourceService;
@@ -79,20 +76,20 @@ public class MethodSecurityConfiguration extends GlobalMethodSecurityConfigurati
     }
 
     @Bean
-    public MethodResourceMapFactoryBean methodResourcesMap() {
-        return new MethodResourceMapFactoryBean(securityResourceService, "method");
+    public MethodResourceMapFactoryBean pointcutResourcesMap() {
+        return new MethodResourceMapFactoryBean(securityResourceService, "pointcut");
     }
 
     @Bean
-    public MethodResourceMapFactoryBean pointcutResourcesMap() {
-        return new MethodResourceMapFactoryBean(securityResourceService, "pointcut");
+    public MethodResourceMapFactoryBean methodResourcesMap() {
+        return new MethodResourceMapFactoryBean(securityResourceService, "method");
     }
 
     /**
      * ! 일단, 안된다...
      * <p>
      * 강사님말로는, Aspect 쪽 처리부분에 lambda 부분 처리에 exception 처리가 안되있어서 라는데, 모르겠다.
-     *
+     * <p>
      * * 그래서 강사님 코드 그냥 훔쳤다.
      */
 //    @Bean
@@ -122,6 +119,23 @@ public class MethodSecurityConfiguration extends GlobalMethodSecurityConfigurati
         protectPointcutPostProcessor.setPointcutMap(pointcutResourcesMap().getObject());
 
         return protectPointcutPostProcessor;
+    }
+
+    @Bean
+    public CustomMethodSecurityInterceptor customMethodSecurityInterceptor(
+        MapBasedMethodSecurityMetadataSource methodSecurityMetadataSource) {
+        CustomMethodSecurityInterceptor customMethodSecurityInterceptor = new CustomMethodSecurityInterceptor();
+        customMethodSecurityInterceptor.setAccessDecisionManager(accessDecisionManager());
+        customMethodSecurityInterceptor.setAfterInvocationManager(afterInvocationManager());
+        customMethodSecurityInterceptor.setSecurityMetadataSource(methodSecurityMetadataSource);
+
+        RunAsManager runAsManager = runAsManager();
+
+        if (runAsManager != null) {
+            customMethodSecurityInterceptor.setRunAsManager(runAsManager);
+        }
+
+        return customMethodSecurityInterceptor;
     }
 
 }

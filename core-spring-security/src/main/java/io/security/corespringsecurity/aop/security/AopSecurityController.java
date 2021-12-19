@@ -64,6 +64,7 @@ public class AopSecurityController {
 
     private final AopMethodService aopMethodService;
     private final AopPointcutService aopPointcutService;
+    private final AopLiveMethodService aopLiveMethodService;
 
     /**
      * ! 반드시, Method 보안 설정을 사용하려면, Configuration 에 @EnableGlobalMethodSecurity 를 선언해야한다.
@@ -98,6 +99,17 @@ public class AopSecurityController {
         aopPointcutService.pointcutSecured();
 
         model.addAttribute("method", "Success PointcutSecured");
+
+        return "aop/method";
+
+    }
+
+    @GetMapping(path = "liveSecured")
+    public String liveSecured(Model model) {
+
+        aopLiveMethodService.liveMethodSecured();
+
+        model.addAttribute("method", "Success LiveMethod.");
 
         return "aop/method";
 
