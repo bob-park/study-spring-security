@@ -15,6 +15,8 @@ public class MethodResourceMapFactoryBean implements
     FactoryBean<Map<String, List<ConfigAttribute>>> {
 
     private final SecurityResourceService securityResourceService;
+    private final String resourceType;
+
     private Map<String, List<ConfigAttribute>> resourceMap;
 
     @Override
@@ -37,6 +39,12 @@ public class MethodResourceMapFactoryBean implements
     }
 
     private void init() {
-        resourceMap = securityResourceService.getMethodResourceList();
+
+        if ("method".equals(resourceType)) {
+            resourceMap = securityResourceService.getMethodResourceList();
+        } else if ("pointcut".equals(resourceType)) {
+            resourceMap = securityResourceService.getPointcutResourceList();
+        }
+
     }
 }

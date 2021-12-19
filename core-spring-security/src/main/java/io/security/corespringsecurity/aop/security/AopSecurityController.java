@@ -63,10 +63,10 @@ import io.security.corespringsecurity.domain.dto.AccountDto;
 public class AopSecurityController {
 
     private final AopMethodService aopMethodService;
+    private final AopPointcutService aopPointcutService;
 
     /**
      * ! 반드시, Method 보안 설정을 사용하려면, Configuration 에 @EnableGlobalMethodSecurity 를 선언해야한다.
-     *
      *
      * @param accountDto
      * @param model
@@ -83,12 +83,24 @@ public class AopSecurityController {
     }
 
     @GetMapping("/methodSecured")
-    public String methodSecured(Model model){
+    public String methodSecured(Model model) {
         aopMethodService.methodSecured();
 
         model.addAttribute("method", "Success MethodSecured");
 
         return "aop/method";
+    }
+
+    @GetMapping(path = "pointcutSecured")
+    public String pointcutSecured(Model model) {
+
+        aopPointcutService.notSecured();
+        aopPointcutService.pointcutSecured();
+
+        model.addAttribute("method", "Success PointcutSecured");
+
+        return "aop/method";
+
     }
 
 }

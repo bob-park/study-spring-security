@@ -1,20 +1,21 @@
 package io.security.corespringsecurity.security.configure;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
-import java.util.List;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.method.MapBasedMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
 import io.security.corespringsecurity.security.factory.MethodResourceMapFactoryBean;
+import io.security.corespringsecurity.security.processor.ProtectPointcutPostProcessor;
 import io.security.corespringsecurity.security.service.SecurityResourceService;
 
 /**
@@ -33,6 +34,8 @@ import io.security.corespringsecurity.security.service.SecurityResourceService;
  *              2. Advice 가 등록되어 있다면 Advice 를 작동하게 하여 인가 처리
  *              3. 권한 심사 통과하면 실제 Bean 의 Method 를 호출한다.
  * </pre>
+ * <p>
+ * <p>
  * Method 방식 - Map 기반 DB 연동
  *
  * <pre>
@@ -42,6 +45,20 @@ import io.security.corespringsecurity.security.service.SecurityResourceService;
  *
  *      - MethodResourcesMapFactoryBean
  *          - DB 로부터 얻은 권한 / 자원 정보를 ResourceMap 을 Bean 으로 생성해서 MapBasedMethodSecurityMetadataSource 에 전달
+ * </pre>
+ * <p>
+ * <p>
+ * ProtectPointcutPostProcessor
+ *
+ * <pre>
+ *      - Method 방식의 인가처리를 위한 자원 및 권한 정보 설정 시 자원에 포인트 컷 포현식을 사용할 수 있도록 지원하는 Class
+ *      - 빈 후 처리기로서 Spring 초기화 과정에서 Bean 을 검사하여 Bean 이 가진 Method 중에서 포인트 컷 표현식과 Matching 되는 클래스, 메서드, 권한정보를 MapBasedMethodSecurityMetadataSource 에 전달하여 인가 처리가 되도록 제공하는 클래스
+ *      - DB 저장 방식
+ *          - Method 방식
+ *              - io.security.service.OrderService.order: ROLE_USER
+ *          - Pointcut 방식
+ *              - execution(* io.security.service.*Service.*(..)): ROLE_USER
+ *      - 설정 클래스에서 Bean 생성기 접근제한자가 Package 범위로 되어 있기 때문에 Reflection 을 이용해 생성한다.
  * </pre>
  */
 @RequiredArgsConstructor
@@ -63,6 +80,48 @@ public class MethodSecurityConfiguration extends GlobalMethodSecurityConfigurati
 
     @Bean
     public MethodResourceMapFactoryBean methodResourcesMap() {
-        return new MethodResourceMapFactoryBean(securityResourceService);
+        return new MethodResourceMapFactoryBean(securityResourceService, "method");
     }
+
+    @Bean
+    public MethodResourceMapFactoryBean pointcutResourcesMap() {
+        return new MethodResourceMapFactoryBean(securityResourceService, "pointcut");
+    }
+
+    /**
+     * ! 일단, 안된다...
+     * <p>
+     * 강사님말로는, Aspect 쪽 처리부분에 lambda 부분 처리에 exception 처리가 안되있어서 라는데, 모르겠다.
+     *
+     * * 그래서 강사님 코드 그냥 훔쳤다.
+     */
+//    @Bean
+//    BeanPostProcessor protectPointcutPostProcessor() throws Exception {
+//
+//        Class<?> clazz = Class.forName(
+//            "org.springframework.security.config.method.ProtectPointcutPostProcessor");
+//
+//        Constructor<?> declaredConstructor = clazz.getDeclaredConstructor(
+//            MapBasedMethodSecurityMetadataSource.class);
+//        declaredConstructor.setAccessible(true);
+//
+//        Object instance = declaredConstructor.newInstance(mapBasedMethodSecurityMetadataSource());
+//
+//        Method setPointcutMap = instance.getClass().getDeclaredMethod("setPointcutMap", Map.class);
+//        setPointcutMap.setAccessible(true);
+//        setPointcutMap.invoke(instance, pointcutResourcesMap().getObject());
+//
+//        return (BeanPostProcessor) instance;
+//
+//    }
+    @Bean
+    public ProtectPointcutPostProcessor protectPointcutPostProcessor() {
+        ProtectPointcutPostProcessor protectPointcutPostProcessor =
+            new ProtectPointcutPostProcessor(mapBasedMethodSecurityMetadataSource());
+
+        protectPointcutPostProcessor.setPointcutMap(pointcutResourcesMap().getObject());
+
+        return protectPointcutPostProcessor;
+    }
+
 }
