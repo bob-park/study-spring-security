@@ -1,6 +1,9 @@
 package io.security.corespringsecurity.security.handler;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,7 +28,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
         AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        String deniedUrl = errorPage + "?exception=" + accessDeniedException.getMessage();
+        String deniedUrl = errorPage + "?exception=" + URLEncoder.encode(accessDeniedException.getMessage(), StandardCharsets.UTF_8);
 
         response.sendRedirect(deniedUrl);
     }

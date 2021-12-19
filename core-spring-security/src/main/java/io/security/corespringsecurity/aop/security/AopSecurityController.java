@@ -1,5 +1,7 @@
 package io.security.corespringsecurity.aop.security;
 
+import lombok.RequiredArgsConstructor;
+
 import java.security.Principal;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,8 +58,11 @@ import io.security.corespringsecurity.domain.dto.AccountDto;
  *
  * </pre>
  */
+@RequiredArgsConstructor
 @Controller
 public class AopSecurityController {
+
+    private final AopMethodService aopMethodService;
 
     /**
      * ! 반드시, Method 보안 설정을 사용하려면, Configuration 에 @EnableGlobalMethodSecurity 를 선언해야한다.
@@ -73,6 +78,15 @@ public class AopSecurityController {
     public String preAuthorize(AccountDto accountDto, Model model, Principal principal) {
 
         model.addAttribute("method", "Success @PreAuthorize.");
+
+        return "aop/method";
+    }
+
+    @GetMapping("/methodSecured")
+    public String methodSecured(Model model){
+        aopMethodService.methodSecured();
+
+        model.addAttribute("method", "Success MethodSecured");
 
         return "aop/method";
     }

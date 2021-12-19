@@ -1,12 +1,21 @@
 package io.security.corespringsecurity.security.configure;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.method.MapBasedMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
+
+import io.security.corespringsecurity.security.factory.MethodResourceMapFactoryBean;
+import io.security.corespringsecurity.security.service.SecurityResourceService;
 
 /**
  * Method 방식 - 주요 아키텍처
@@ -30,6 +39,9 @@ import org.springframework.security.config.annotation.method.configuration.Globa
  *      - Annotation 설정 방식이 아닌 Map 기반으로 권한 설정
  *      - 기본적인 구현이 완성되어 있고, DB 로부터 자원과 권한정보를 맵핑함
  *      - 데이터를 전달하면 Method 방식의 인가처리가 이루어지는 클래스
+ *
+ *      - MethodResourcesMapFactoryBean
+ *          - DB 로부터 얻은 권한 / 자원 정보를 ResourceMap 을 Bean 으로 생성해서 MapBasedMethodSecurityMetadataSource 에 전달
  * </pre>
  */
 @RequiredArgsConstructor
@@ -37,8 +49,20 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 @Configuration
 public class MethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
 
+    private final SecurityResourceService securityResourceService;
+
     @Override
     protected MethodSecurityMetadataSource customMethodSecurityMetadataSource() {
-        return new MapBasedMethodSecurityMetadataSource();
+        return mapBasedMethodSecurityMetadataSource();
+    }
+
+    @Bean
+    public MapBasedMethodSecurityMetadataSource mapBasedMethodSecurityMetadataSource() {
+        return new MapBasedMethodSecurityMetadataSource(methodResourcesMap().getObject());
+    }
+
+    @Bean
+    public MethodResourceMapFactoryBean methodResourcesMap() {
+        return new MethodResourceMapFactoryBean(securityResourceService);
     }
 }
