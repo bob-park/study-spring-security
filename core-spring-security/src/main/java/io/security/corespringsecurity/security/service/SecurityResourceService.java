@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.access.ConfigAttribute;
@@ -26,7 +27,7 @@ public class SecurityResourceService {
     private final ResourcesRepository resourcesRepository;
     private final AccessIpRepository accessIpRepository;
 
-    public LinkedHashMap<RequestMatcher, List<ConfigAttribute>> getResourceList() {
+    public Map<RequestMatcher, List<ConfigAttribute>> getResourceList() {
 
         LinkedHashMap<RequestMatcher, List<ConfigAttribute>> result = new LinkedHashMap<>();
 
@@ -52,5 +53,40 @@ public class SecurityResourceService {
             .stream()
             .map(AccessIp::getIpAddress)
             .collect(Collectors.toList());
+    }
+
+    public Map<String, List<ConfigAttribute>> getMethodResourceList() {
+
+        LinkedHashMap<String, List<ConfigAttribute>> result = new LinkedHashMap<>();
+
+        resourcesRepository.findAllMethodResources().forEach(resources -> {
+            List<ConfigAttribute> configAttributeList = new ArrayList<>();
+
+            resources.getRoleSet()
+                .forEach(role -> configAttributeList.add(new SecurityConfig(role.getRoleName())));
+
+            result.put(resources.getResourceName(), configAttributeList);
+
+        });
+
+        return result;
+
+    }
+
+    public Map<String, List<ConfigAttribute>> getPointcutResourceList() {
+
+        LinkedHashMap<String, List<ConfigAttribute>> result = new LinkedHashMap<>();
+
+        resourcesRepository.findAllPointcutResources().forEach(resources -> {
+            List<ConfigAttribute> configAttributeList = new ArrayList<>();
+
+            resources.getRoleSet()
+                .forEach(role -> configAttributeList.add(new SecurityConfig(role.getRoleName())));
+
+            result.put(resources.getResourceName(), configAttributeList);
+
+        });
+
+        return result;
     }
 }

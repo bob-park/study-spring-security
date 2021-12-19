@@ -18,6 +18,7 @@ import io.security.corespringsecurity.domain.entity.Resources;
 import io.security.corespringsecurity.domain.entity.Role;
 import io.security.corespringsecurity.repository.RoleRepository;
 import io.security.corespringsecurity.security.metadatasource.UrlFilterInvocationSecurityMetadataSource;
+import io.security.corespringsecurity.security.service.MethodSecurityService;
 import io.security.corespringsecurity.service.resources.ResourcesService;
 import io.security.corespringsecurity.service.role.RoleService;
 
@@ -28,6 +29,7 @@ public class ResourcesController {
     private final ResourcesService resourcesService;
     private final RoleRepository roleRepository;
     private final RoleService roleService;
+    private final MethodSecurityService methodSecurityService;
 
     private final UrlFilterInvocationSecurityMetadataSource urlFilterInvocationSecurityMetadataSource;
 
@@ -52,7 +54,12 @@ public class ResourcesController {
 
         resourcesService.createResources(resources);
 
-        urlFilterInvocationSecurityMetadataSource.reload();
+        if ("url".equals(resourcesDto.getResourceType())) {
+            urlFilterInvocationSecurityMetadataSource.reload();
+        } else {
+            methodSecurityService.addMethodSecured(resourcesDto.getResourceName(),
+                resourcesDto.getRoleName());
+        }
 
         return "redirect:/admin/resources";
     }
@@ -92,7 +99,11 @@ public class ResourcesController {
         Resources resources = resourcesService.getResources(Long.valueOf(id));
         resourcesService.deleteResources(Long.valueOf(id));
 
-        urlFilterInvocationSecurityMetadataSource.reload();
+        if ("url".equals(resources.getResourceType())) {
+            urlFilterInvocationSecurityMetadataSource.reload();
+        } else {
+            methodSecurityService.removeMethodSecured(resources.getResourceName());
+        }
 
         return "redirect:/admin/resources";
     }
